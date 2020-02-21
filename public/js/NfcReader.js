@@ -24,12 +24,10 @@ class NfcReader {
 
             this.device.oninputreport = this.onInputReport;
             callback(true);
-        }).catch(() => {
+        }).catch(error => {
             callback(false);
         });
     }
-
-
 
     /**
      * Sets the callback function to use when a reader event has happened
@@ -42,11 +40,32 @@ class NfcReader {
 
     /**
      * Pings the device
+     * 
+     * @throws Throws an error if the reader is not connected
      */
     ping = () => {
         // Only need to add the CRC as this command has no payload
-        this.sendCommand(0x18, 0x01, hexToBytes("b3cd"));
+        try {
+            this.sendCommand(0x18, 0x01, hexToBytes("b3cd"));
+        } catch (error) {
+            throw error;
+        }
     }
+
+    /**
+     * Sends a command to the reader to activate the transaction
+     * 
+     * @param {Uint8Array} data The command data + CRC
+     * @throws Throws an error if the reader is not connected
+     */
+    activateTransaction = (data) => {
+        try {
+            this.sendCommand(0x02, 0x40, data);
+        } catch (error) {
+            throw error;
+        }
+    }
+
 
     /**
      * Sends a command to the reader

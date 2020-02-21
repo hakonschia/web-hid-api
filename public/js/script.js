@@ -29,7 +29,7 @@ window.onload = () => {
         //let hex = "9f0201009f030100ffee080adfef1a010adfed280103";
         let bytes = hexToBytes(hex);
 
-        nfcReader.sendCommand(0x02, 0x40, bytes);
+        nfcReader.activateTransaction(bytes);
     }
 
     ui.smartTapRedemptionValue = document.getElementById("smartTapRedemptionValue");
