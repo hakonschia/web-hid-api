@@ -13,7 +13,7 @@ const PRODUCT_ID = 0x3530;
  * The LTPK data
  * Must be 32 bytes long
  */
-const LTPK = "";
+const LTPK = "961949513dd3d1693ab64f13fb684ca242c0b1c4b5008ea02627f1304b900f7b";
 
 /**
  * The LTPK version
@@ -27,7 +27,9 @@ const LTPK_VERSION = "00000001";
  * Our merchant ID, see merchant center
  * Must be 4 bytes long
  */
-const MERCHANT_ID = "03D6019B";
+const MERCHANT_ID = "04bedbe7";
+
+const MERCHANT_ID_DATA = "ffe4018edfee3b04" + MERCHANT_ID + "dfee3c00dfee3d00dfef2500dfed0100dfed02050000000001";
 
 
 /**

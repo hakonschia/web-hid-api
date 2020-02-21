@@ -1,0 +1,20 @@
+{
+  "name": "web-hid",
+  "version": "1.0.0",
+  "description": "Exploring the WebHID API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hakonschia/web-hid-api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hakonschia/web-hid-api/issues"
+  },
+  "homepage": "https://github.com/hakonschia/web-hid-api#readme",
+  "dependencies": {}
+}

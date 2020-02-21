@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="js/script.js"></script>
+    <script src="js/util.js"></script>
+
+    <script src="js/NfcReader.js"></script>
+    <script src="js/DeviceState.js"></script>
+
+    <script src="js/constants.js"></script>
+</head>
+<body>
+    <button id="requestAccess">Request access to reader</button>
+
+    <button id="testTransaction">Test</button>
+
+    <button id="pingDevice">Ping device</button>
+
+    <br><br><br>
+    <label for="command">Command</label>
+    <input type="number" name="command" id="commandInput">
+
+
+    <label for="subCommand">Sub command</label>
+    <input type="number" name="subCommand" id="subCommandInput">
+    <br>
+
+    <br>
+    <label for="commandData">Command data</label>
+    <br>
+    <input type="text" name="commandData" id="commandDataInput">
+
+    <br>
+    <br>
+    <button id="sendCommand">Send command</button>
+
+
+    <br>
+    <textarea id="outputText" rows="40" cols="100" disabled></textarea>
+</body>
+</html>

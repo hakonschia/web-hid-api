@@ -7,28 +7,39 @@ class NfcReader {
      */
     constructor(device) {
         this.device = device;
+        this.inputReportData = new Uint8Array();
 
         this.device.open().then(() => {
             console.log("Device opened");
 
             this.configure();
-        });
 
-        this.device.oninputreport = this.onInputReport;
+            this.device.oninputreport = this.onInputReport;
+        });
     }
 
-    setCallback(callback) {
+    /**
+     * Sets the callback function to use when a reader event has happened
+     * 
+     * @param {function} callback The callback should look like: callback(Uint8Array, DeviceState)
+     */
+    setCallback = (callback) => {
         this.callback = callback;
     }
 
-    configure() {
+    configure = () => {
+        let crc = "541d";
         // Set merchant ID
+        this.sendCommand(0x04, 0x03, hexToBytes(MERCHANT_ID_DATA + crc));
 
+        crc = "5790";
         // Set LTPK
+        this.sendCommand(0xC7, 0x65, hexToBytes(LTPK_VERSION + LTPK + crc));
     }
 
-    ping() {
-
+    ping = () => {
+        // Only need to add the CRC as this command has no payload
+        this.sendCommand(0x18, 0x01, hexToBytes("b3cd"));
     }
 
     /**
@@ -37,19 +48,14 @@ class NfcReader {
      * @param {octet} subCommand 
      * @param {Uint8Array} data The command data + CRC
      */
-    sendCommand(command, subCommand, data) {
+    sendCommand = (command, subCommand, data) => {
         if (!this.device.opened) {
             console.warn("Trying to use unopened device");
 
             return;
         }
 
-        console.log("buildCommand output:");
-        console.log(this.buildCommand(command, subCommand, data))
-
         data = this.buildCommand(command, subCommand, data);
-        // Build the command with header, command, subcommand, length etc
-
 
         this.device.sendReport(0x01, data);
 
@@ -67,7 +73,7 @@ class NfcReader {
      * @param {octet} subCommand The subcommand to use
      * @param {Uint8Array} baseData The command data + CRC
      */
-    buildCommand(command, subCommand, baseData) {
+    buildCommand = (command, subCommand, baseData) => {
         const commandLength = 1;
         const subCommandLength = 1;
         const dataLengthLength = 2;
@@ -96,9 +102,54 @@ class NfcReader {
         return data;
     }
 
-    onInputReport(e) {
-        let data = e.data;
+    /**
+     * Called when the reader has sent data back to the application
+     * 
+     * If the callback is set, it is automatically called
+     * 
+     * @param {HIDInputReportEvent} e The event data
+     */
+    onInputReport = (e) => {
+        let data = new Uint8Array(e.data.buffer);
 
-        console.log(e);
+        // The data returned is always 63 bytes long, if the end of the array isn't a 0
+        // more data is coming later, so do not call the callback yet, but append the data together first
+
+        let newData = new Uint8Array(this.inputReportData.length + data.length);
+        newData.set(this.inputReportData);
+        newData.set(data, this.inputReportData.length);
+
+        this.inputReportData = newData;
+
+        if (lastBlank(data)) {
+            if (this.callback != null) {
+                let trimmed = trimEnd(this.inputReportData, 0);
+
+                this.callback(trimmed, DeviceState.DataReceived);
+            } else {
+                console.warn("No reader callback set");
+            }
+
+            this.inputReportData = new Uint8Array();
+        }
+    }
+
+
+    /**
+     * Gets the command from a response
+     * 
+     * @param {Uint8Array} data The data from the response
+     */
+    static getCommand = (data) => {
+        return data[VIVOPAY_2_HEADER.length];
+    }
+
+    /**
+     * Gets the response code from a response
+     * 
+     * @param {Uint8Array} data The data from the response
+     */
+    static getResponse = (data) => {
+        return data[VIVOPAY_2_HEADER.length + 1];
     }
 }
