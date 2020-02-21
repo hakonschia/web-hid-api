@@ -1,26 +1,29 @@
 let ui = {
     requestAccessBtn: null,
     outputText: null,
-    testTransaction: null,
+
+    activateTransaction: null,
     pingDevice: null,
+
+    smartTapRedemptionValue: null,
 
     commandInput: null,
     subCommandInput: null,
     commandDataInput: null,
 
     sendCommand: null
-}
+};
 
 let nfcReader = null;
 
 window.onload = () => {
-    ui.requestAccessBtn = document.getElementById("requestAccess");
+    ui.requestAccessBtn = document.getElementById("requestAccessBtn");
     ui.requestAccessBtn.onclick = requestAccessOnClick;
 
     ui.outputText = document.getElementById("outputText")
 
-    ui.testTransaction = document.getElementById("testTransaction");
-    ui.testTransaction.onclick = () => {
+    ui.activateTransaction = document.getElementById("activateTransaction");
+    ui.activateTransaction.onclick = () => {
         //let hex = "5669564f746563683200024000169f0201009f030100ffee080adfef1a010adfed280103fd1a";
         let hex = "9f0201009f030100ffee080adfef1a010adfed280103fd1a";
         //let hex = "9f0201009f030100ffee080adfef1a010adfed280103";
@@ -28,6 +31,8 @@ window.onload = () => {
 
         nfcReader.sendCommand(0x02, 0x40, bytes);
     }
+
+    ui.smartTapRedemptionValue = document.getElementById("smartTapRedemptionValue");
 
     ui.commandInput = document.getElementById("commandInput");
     ui.subCommandInput = document.getElementById("subCommandInput");
@@ -64,14 +69,32 @@ let requestAccessOnClick = async () => {
         return;
     }
 
-    console.log(device);
-
     if (device !== undefined) {
         nfcReader = new NfcReader(device);
 
-        nfcReader.setCallback(readerCallback);
+        nfcReader.connect(connected => {
+            nfcReader.setCallback(readerCallback);
+
+            configureReader();
+        })
     }
 }
+
+/**
+ * Configures the reader
+ * 
+ * Sets the merchant ID and LTPK
+ */
+let configureReader = () => {
+    let crc = "541d";
+    // Set merchant ID
+    nfcReader.sendCommand(0x04, 0x03, hexToBytes(MERCHANT_ID_DATA + crc));
+
+    crc = "5790";
+    // Set LTPK
+    nfcReader.sendCommand(0xC7, 0x65, hexToBytes(LTPK_VERSION + LTPK + crc));
+}
+
 
 /**
  * Click listener for the "Send command" button
@@ -129,7 +152,10 @@ let handleTransactionResponse = (data) => {
 
     // 0x57 = Loyalty response
     if (response == 0x57) {
-        
+        let smartTapRedemptionValue = ndefParser.getSmartTapRedemptionValue(data);
+
+        console.log("smartTapRedemptionValue:", smartTapRedemptionValue);
+        ui.smartTapRedemptionValue.innerHTML = "Data read from phone: " + smartTapRedemptionValue;
     } else {
         console.warn("There was an error reading the pass")
     }

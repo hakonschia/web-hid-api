@@ -16,5 +16,7 @@
     "url": "https://github.com/hakonschia/web-hid-api/issues"
   },
   "homepage": "https://github.com/hakonschia/web-hid-api#readme",
-  "dependencies": {}
+  "dependencies": {
+    "ndef": "^0.2.0"
+  }
 }

@@ -1,22 +1,35 @@
 class NfcReader {
 
     /**
-     * Connects to the device and configures it
+     * Creates a new device
      * 
-     * @param {HIDDevice} device 
+     * Use NfcReader.connect() to connect to the device
+     * 
+     * @param {HIDDevice} device The device info
      */
     constructor(device) {
         this.device = device;
         this.inputReportData = new Uint8Array();
+    }
 
+    /**
+     * Connects to the device
+     * 
+     * @param {function} callback The callback should look like: callback(connected)
+     * If connceting to the device was successfull, connected will be true
+     */
+    connect(callback) {
         this.device.open().then(() => {
             console.log("Device opened");
 
-            this.configure();
-
             this.device.oninputreport = this.onInputReport;
+            callback(true);
+        }).catch(() => {
+            callback(false);
         });
     }
+
+
 
     /**
      * Sets the callback function to use when a reader event has happened
@@ -27,32 +40,28 @@ class NfcReader {
         this.callback = callback;
     }
 
-    configure = () => {
-        let crc = "541d";
-        // Set merchant ID
-        this.sendCommand(0x04, 0x03, hexToBytes(MERCHANT_ID_DATA + crc));
-
-        crc = "5790";
-        // Set LTPK
-        this.sendCommand(0xC7, 0x65, hexToBytes(LTPK_VERSION + LTPK + crc));
-    }
-
+    /**
+     * Pings the device
+     */
     ping = () => {
         // Only need to add the CRC as this command has no payload
         this.sendCommand(0x18, 0x01, hexToBytes("b3cd"));
     }
 
     /**
+     * Sends a command to the reader
      * 
      * @param {octet} command 
      * @param {octet} subCommand 
      * @param {Uint8Array} data The command data + CRC
+     * 
+     * @throws Throws an exception if the reader is not connected
      */
     sendCommand = (command, subCommand, data) => {
         if (!this.device.opened) {
             console.warn("Trying to use unopened device");
 
-            return;
+            throw "Reader is not connected";
         }
 
         data = this.buildCommand(command, subCommand, data);

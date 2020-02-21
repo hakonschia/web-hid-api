@@ -31,6 +31,25 @@ function bytesToHex(bytes) {
     return hex.join("");
 }
 
+
+/**
+ * Convert a hex string to an ASCII string
+ * 
+ * Taken from: https://stackoverflow.com/a/3745677
+ * 
+ * @param {string} hex The hex string to convert 
+ * @returns An ASCII representation of the hex string
+ */
+function hexToAscii(hex) {
+    var hex = hex.toString();
+    var str = '';
+    for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2) {
+        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    }
+    return str;
+}
+
+
 /**
  * Converts an int to a byte array
  * 
@@ -102,4 +121,27 @@ let trimEnd = (array, value) => {
     }
 
     return index == -1 ? array : array.slice(0, index);
+}
+
+
+/**
+ * Finds the starting index of a sub array in an array
+ * 
+ * @param {array} array The array to search in
+ * @param {array} subArray The sub array to search for
+ * @returns The starting index of subArray. If it wasn't found -1 is returned
+ */
+let getIndexOfSubArray = (array, subArray) => {
+    let index = -1;
+
+    for (let i = 0; i < array.length - subArray.length; i++) {
+        let toCompare = array.slice(i, i + subArray.length);
+
+        if (JSON.stringify(toCompare) === JSON.stringify(subArray)) {
+            index = i;
+            break;
+        }
+    }
+
+    return index;
 }
