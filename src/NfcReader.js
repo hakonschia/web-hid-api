@@ -1,6 +1,7 @@
 import { VIVOPAY_2_HEADER } from './constants';
 import { bytesToHex, hexToBytes, leftPad, intToByteArray, lastBlank, trimEnd } from './util';
 import CrcCalculator from './CrcCalculator';
+import ReaderNotConnected from './exceptions/ReaderNotConnected';
 var DeviceState = require('./DeviceState').default;
 
 export default class NfcReader {
@@ -47,10 +48,10 @@ export default class NfcReader {
     /**
      * Pings the device
      * 
-     * @throws Throws an error if the reader is not connected
+     * @throws Throws a ReaderNotConnected exception if the reader is not connected
      */
     ping = () => {
-        // Only need to add the CRC as this command has no payload
+        // The ping command takes no payload
         try {
             this.sendCommand(0x18, 0x01, []);
         } catch (error) {
@@ -62,7 +63,7 @@ export default class NfcReader {
      * Sends a command to the reader to activate the transaction
      * 
      * @param {Uint8Array} data The command data
-     * @throws Throws an error if the reader is not connected
+     * @throws Throws a ReaderNotConnected exception if the reader is not connected
      */
     activateTransaction = (data) => {
         try {
@@ -86,7 +87,7 @@ export default class NfcReader {
         if (!this.device || !this.device.opened) {
             console.warn("Trying to use unconnected or unopened device");
 
-            throw "Reader is not connected or has not yet been opened";
+            throw new ReaderNotConnected("Reader is not connected or has not yet been opened");
         }
 
         data = this.buildCommand(command, subCommand, data);

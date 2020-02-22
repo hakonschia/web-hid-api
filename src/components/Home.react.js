@@ -16,13 +16,20 @@ export default class Home extends React.Component {
             outputText: "",
             smartTapRedemptionValue: "",
 
-            commandInput: null,
-            subCommandInput: null,
-            commandDataInput: null
+            commandInput: "",
+            subCommandInput: "",
+            commandDataInput: ""
         };
 
         console.log(bytesToHex(CrcCalculator.crc16(hexToBytes("5669564f746563683200c765002400000001961949513dd3d1693ab64f13fb684ca242c0b1c4b5008ea02627f1304b900f7b"))));
     }
+
+    addOutput(text) {
+        this.setState({
+            outputText: this.state.outputText += text
+        });
+    }
+
 
     /**
      * Finds the device if it is already paired
@@ -117,7 +124,15 @@ export default class Home extends React.Component {
         try {
             let command = hexToBytes(this.state.commandInput.toString())[0];
             let subCommand = hexToBytes(this.state.subCommandInput.toString())[0];
-    
+
+            if (command == undefined || subCommand == undefined || command == 0) {
+                this.addOutput("Invalid parameters\n");
+
+                return;
+            }
+
+            console.log(command);
+
             let data = this.state.commandDataInput;
             if (data != null) {
                 data = hexToBytes(data);
@@ -129,7 +144,7 @@ export default class Home extends React.Component {
     
             this.nfcReader.sendCommand(command, subCommand, data);
         } catch(error) {
-            alert("No reader connected")
+            alert("No reader connected " + error)
         }
     }
 
@@ -145,15 +160,11 @@ export default class Home extends React.Component {
 
         switch (deviceState) {
             case DeviceState.DataSent:
-                this.setState({
-                    outputText: this.state.outputText += `Data sent: ${hex}\n`
-                });
+                this.addOutput(`Data sent: ${hex}\n`);
                 break;
 
             case DeviceState.DataReceived:
-                this.setState({
-                    outputText: this.state.outputText += `Data received: ${hex}\n`
-                });
+                this.addOutput(`Data received: ${hex}\n`);
 
                 // 0x02 = Activate transaction
                 if (command == 0x02) {
@@ -218,10 +229,10 @@ export default class Home extends React.Component {
 
                 <br></br> <br></br> <br></br>
                 <label htmlFor="command">Command</label>
-                <input type="number" name="command" onChange={e => this.setState({commandInput: e.target.value})}></input>
+                <input type="text" name="command" onChange={e => this.setState({commandInput: e.target.value})}></input>
 
                 <label htmlFor="subCommand">Sub command</label>
-                <input type="number" name="subCommand" onChange={e => this.setState({subCommandInput: e.target.value})}></input>
+                <input type="text" name="subCommand" onChange={e => this.setState({subCommandInput: e.target.value})}></input>
                 <br></br>
 
                 <br></br>
