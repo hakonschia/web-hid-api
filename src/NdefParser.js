@@ -1,5 +1,4 @@
 import { hexToAscii, bytesToHex, getIndexOfSubArray } from './util.js';
-
 const ndef = require('ndef');
 
 
@@ -61,25 +60,31 @@ export default class NdefParser {
      * @return An NDEF record which holds the smartTapRedemptionValue, or null if not found
      */
     static getSmartTapNdefRecord = (data) => {
-        var arr = Array.from(data);
+        // decodeMessage expects a standard array
+        let arr = Array.from(data);
 
-        var ndefMessage = ndef.decodeMessage(arr);
-
-        if (ndefMessage.length == 0) {
-            return null;
-        }
+        let ndefMessage = ndef.decodeMessage(arr);
 
         for (let i = 0; i < ndefMessage.length; i++) {
-            var ndefRecord = ndefMessage[i];
+            let ndefRecord = ndefMessage[i];
+            console.log(ndefRecord)
 
             // 0x54 = 84 = T in ASCII
             if (ndefRecord.type == "T") {
                 return ndefRecord;
             }
+
+            var msg = ndef.decodeMessage(ndefRecord.payload);
+
+            // decodeMessage sometimes gives back a record with an empty payload for some reason            
+            if (msg.length > 0 && msg[0].payload.length > 0) {
+                return this.getSmartTapNdefRecord(ndefRecord.payload);
+            }
         }
 
-        return this.getSmartTapNdefRecord(ndefRecord.payload);
+        return null;
     }
+
 }
 
 
