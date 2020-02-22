@@ -13,7 +13,11 @@ export default class Home extends React.Component {
 
         this.state = {
             outputText: "",
-            smartTapRedemptionValue: ""
+            smartTapRedemptionValue: "",
+
+            commandInput: null,
+            subCommandInput: null,
+            commandDataInput: null
         };
     }
 
@@ -113,15 +117,22 @@ export default class Home extends React.Component {
      * If the reader isn't connected an alert is shown
      */
     sendCommandOnClick = () => {
-        console.log(this.commandInput)
         try {
-            let command = hexToBytes(this.commandInput.value)[0];
-            let subCommand = hexToBytes(this.subCommandInput.value)[0];
-            let data = hexToBytes(this.commandDataInput.value);
-
+            let command = hexToBytes(this.state.commandInput.toString())[0];
+            let subCommand = hexToBytes(this.state.subCommandInput.toString())[0];
+    
+            let data = this.state.commandDataInput;
+            if (data != null) {
+                data = hexToBytes(data);
+            } else {
+                data = new Uint8Array();
+            }
+    
+            console.log(data);
+    
             this.nfcReader.sendCommand(command, subCommand, data);
-        } catch (error) {
-            alert("No device connected:", error);
+        } catch(error) {
+            alert("No reader connected")
         }
     }
 
@@ -210,16 +221,16 @@ export default class Home extends React.Component {
 
                 <br></br> <br></br> <br></br>
                 <label htmlFor="command">Command</label>
-                <input type="number" name="command" value={this.commandInput}></input>
+                <input type="number" name="command" onChange={e => this.setState({commandInput: e.target.value})}></input>
 
                 <label htmlFor="subCommand">Sub command</label>
-                <input type="number" name="subCommand" value={this.subCommandInput}></input>
+                <input type="number" name="subCommand" onChange={e => this.setState({subCommandInput: e.target.value})}></input>
                 <br></br>
 
                 <br></br>
-                <label htmlFor="commandData">Command data</label>
+                <label htmlFor="commandData">Command data + CRC</label>
                 <br></br>
-                <input type="text" name="commandData" value={this.commandDataInput}></input>
+                <input type="text" name="commandData" onChange={e => this.setState({commandDataInput: e.target.value})}></input>
 
                 <br></br>
                 <br></br>
