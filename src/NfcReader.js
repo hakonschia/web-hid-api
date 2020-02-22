@@ -1,5 +1,6 @@
 import { VIVOPAY_2_HEADER } from './constants';
-import { hexToBytes, leftPad, intToByteArray, lastBlank, trimEnd } from './util';
+import { bytesToHex, hexToBytes, leftPad, intToByteArray, lastBlank, trimEnd } from './util';
+import CrcCalculator from './CrcCalculator';
 var DeviceState = require('./DeviceState').default;
 
 export default class NfcReader {
@@ -51,7 +52,7 @@ export default class NfcReader {
     ping = () => {
         // Only need to add the CRC as this command has no payload
         try {
-            this.sendCommand(0x18, 0x01, hexToBytes("b3cd"));
+            this.sendCommand(0x18, 0x01, []);
         } catch (error) {
             throw error;
         }
@@ -60,7 +61,7 @@ export default class NfcReader {
     /**
      * Sends a command to the reader to activate the transaction
      * 
-     * @param {Uint8Array} data The command data + CRC
+     * @param {Uint8Array} data The command data
      * @throws Throws an error if the reader is not connected
      */
     activateTransaction = (data) => {
@@ -77,7 +78,7 @@ export default class NfcReader {
      * 
      * @param {octet} command 
      * @param {octet} subCommand 
-     * @param {Uint8Array} data The command data + CRC
+     * @param {Uint8Array} data The command data
      * 
      * @throws Throws an exception if the reader is not connected or has not yet been opened
      */
@@ -104,9 +105,10 @@ export default class NfcReader {
      * 
      * @param {octet} command The command to use
      * @param {octet} subCommand The subcommand to use
-     * @param {Uint8Array} baseData The command data + CRC
+     * @param {Uint8Array} baseData The command data
      */
     buildCommand = (command, subCommand, baseData) => {
+        const headerLength = VIVOPAY_2_HEADER.length;
         const commandLength = 1;
         const subCommandLength = 1;
         const dataLengthLength = 2;
@@ -114,23 +116,29 @@ export default class NfcReader {
 
         // The CRC is present in the data here, but isn't counted in the payload length for the command
         // TODO Try to calculate the CRC manually
-        let dataLength = baseData.length - CRCLength;
+        let dataLength = baseData.length;
         let dataLengthAsByteArray = leftPad(intToByteArray(dataLength), 0, dataLengthLength);
 
         // Data is structured as:
         // HEADER - COMMAND (1 byte) - SUBCOMMAND (1 byte) - DATA LENGTH (2 bytes) - DATA - CRC (2 bytes)
-        let data = new Uint8Array(VIVOPAY_2_HEADER.length + commandLength + subCommandLength + dataLengthLength + dataLength + CRCLength);
+        let length = headerLength + commandLength + subCommandLength + dataLengthLength + dataLength + CRCLength;
+        let data = new Uint8Array(length);
 
         // TOOD refactor this mess
         data.set(VIVOPAY_2_HEADER);
 
-        data.set([command], VIVOPAY_2_HEADER.length);
+        data.set([command], headerLength);
 
-        data.set([subCommand], VIVOPAY_2_HEADER.length + commandLength);
+        data.set([subCommand], headerLength + commandLength);
 
-        data.set(dataLengthAsByteArray, VIVOPAY_2_HEADER.length + commandLength + subCommandLength);
+        data.set(dataLengthAsByteArray, headerLength + commandLength + subCommandLength);
 
-        data.set(baseData, VIVOPAY_2_HEADER.length + commandLength + subCommandLength + dataLengthLength);
+        data.set(baseData, headerLength + commandLength + subCommandLength + dataLengthLength);
+
+        // Calculate the CRC from the entire command so far
+        let crc = CrcCalculator.crc16(data.slice(0, data.length - CRCLength));
+
+        data.set(crc, headerLength + commandLength + subCommandLength + dataLengthLength + dataLength);
 
         return data;
     }

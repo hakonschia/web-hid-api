@@ -4,6 +4,7 @@ import NfcReader from '../NfcReader';
 import { VENDOR_ID, PRODUCT_ID, MERCHANT_ID_DATA, LTPK, LTPK_VERSION } from '../constants';
 import { hexToBytes, bytesToHex } from '../util';
 import DeviceState from '../DeviceState';
+import CrcCalculator from '../CrcCalculator';
 
 export default class Home extends React.Component {
     constructor(props) {
@@ -19,8 +20,9 @@ export default class Home extends React.Component {
             subCommandInput: null,
             commandDataInput: null
         };
-    }
 
+        console.log(bytesToHex(CrcCalculator.crc16(hexToBytes("5669564f746563683200c765002400000001961949513dd3d1693ab64f13fb684ca242c0b1c4b5008ea02627f1304b900f7b"))));
+    }
 
     /**
      * Finds the device if it is already paired
@@ -80,13 +82,11 @@ export default class Home extends React.Component {
      * Sets the merchant ID and LTPK
      */
     configureReader = () => {
-        let crc = "541d";
         // Set merchant ID
-        this.nfcReader.sendCommand(0x04, 0x03, hexToBytes(MERCHANT_ID_DATA + crc));
+        this.nfcReader.sendCommand(0x04, 0x03, hexToBytes(MERCHANT_ID_DATA));
 
-        crc = "5790";
         // Set LTPK
-        this.nfcReader.sendCommand(0xC7, 0x65, hexToBytes(LTPK_VERSION + LTPK + crc));
+        this.nfcReader.sendCommand(0xC7, 0x65, hexToBytes(LTPK_VERSION + LTPK));
     }
 
     pingDevice = () => {
@@ -94,10 +94,7 @@ export default class Home extends React.Component {
     }
 
     activateTransaction = () => {
-        console.log("Activate")
-        //let hex = "5669564f746563683200024000169f0201009f030100ffee080adfef1a010adfed280103fd1a";
-        let hex = "9f0201009f030100ffee080adfef1a010adfed280103fd1a";
-        //let hex = "9f0201009f030100ffee080adfef1a010adfed280103";
+        let hex = "9f0201009f030100ffee080adfef1a010adfed280103";
         let bytes = hexToBytes(hex);
 
         try {
