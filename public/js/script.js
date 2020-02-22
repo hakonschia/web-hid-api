@@ -16,7 +16,10 @@ let ui = {
 
 let nfcReader = null;
 
+
 window.onload = async () => {
+    nfcReader = new NfcReader();
+    
     // Check if the device is already paired
     getDevice().then(device => {
         if (device != null) {
@@ -49,9 +52,7 @@ window.onload = async () => {
     ui.sendCommand.onclick = sendCommandOnClick;
 
     ui.pingDevice = document.getElementById("pingDevice");
-    ui.pingDevice.onclick = () => {
-        nfcReader.ping();
-    }
+    ui.pingDevice.onclick = () => nfcReader.ping();
 }
 
 /**
@@ -74,7 +75,7 @@ let initializeReader = (device) => {
 /**
  * Finds the device if it is already paired
  * 
- * @returns If the device is paired, the HIDDevice is returned. Otherwise null is returned
+ * @returns A promise either containing the HIDDevice if it was found, otherwise it contains null
  */
 let getDevice = async () => {
     let device = await navigator.hid.getDevices({
@@ -161,7 +162,6 @@ let readerCallback = (data, deviceState) => {
             break;
 
         case DeviceState.DataReceived:
-            console.trace();
             ui.outputText.value += `Data received: ${hex}\n`;
 
             // 0x02 = Activate transaction
@@ -176,6 +176,13 @@ let readerCallback = (data, deviceState) => {
     }
 }
 
+/**
+ * Handles the responses from transaction commands
+ * 
+ * Tries to find the smartTapRedemptionValue
+ * 
+ * @param {Uint8Array} data The data from a SmartTap 
+ */
 let handleTransactionResponse = (data) => {
     let response = NfcReader.getResponse(data);
 

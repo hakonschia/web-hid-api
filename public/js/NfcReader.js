@@ -7,7 +7,7 @@ class NfcReader {
      * 
      * @param {HIDDevice} device The HIDDevice returned from hid.getDevices() or hid.requestDevice()
      */
-    constructor(device) {
+    constructor(device = null) {
         this.device = device;
         this.inputReportData = new Uint8Array();
     }
@@ -74,13 +74,13 @@ class NfcReader {
      * @param {octet} subCommand 
      * @param {Uint8Array} data The command data + CRC
      * 
-     * @throws Throws an exception if the reader is not connected
+     * @throws Throws an exception if the reader is not connected or has not yet been opened
      */
     sendCommand = (command, subCommand, data) => {
-        if (!this.device.opened) {
-            console.warn("Trying to use unopened device");
+        if (!this.device || !this.device.opened) {
+            console.warn("Trying to use unconnected or unopened device");
 
-            throw "Reader is not connected";
+            throw "Reader is not connected or has not yet been opened";
         }
 
         data = this.buildCommand(command, subCommand, data);
@@ -149,6 +149,9 @@ class NfcReader {
 
         this.inputReportData = newData;
 
+        // Can maybe check something with the start being the header?
+        // Maybe something with the CRC can be done
+        // TODO this doesn't really work because it can end on 0 without being finished
         if (lastBlank(data)) {
             if (this.callback != null) {
                 let trimmed = trimEnd(this.inputReportData, 0);
