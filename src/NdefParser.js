@@ -67,12 +67,10 @@ export default class NdefParser {
         let arr = Array.from(data);
 
         let ndefMessage = ndef.decodeMessage(arr);
-        console.log(ndefMessage.length)
 
         for (let i = 0; i < ndefMessage.length; i++) {
             let ndefRecord = ndefMessage[i];
 
-            console.log(ndefRecord);
             // NOTE: The correct record being in the type 0x54 is a heavy assumption which is not
             // always correct, but without signing an NDA with Google it's the best we can do
             // It seems that even though there migth be multiple 0x54 types, the ID is 0x6E only
