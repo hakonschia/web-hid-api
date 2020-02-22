@@ -1,5 +1,5 @@
 import { VIVOPAY_2_HEADER } from './constants';
-import { leftPad, intToByteArray, lastBlank, trimEnd } from './util';
+import { leftPad, intToByteArray, trimEnd, arraysEqual } from './util';
 import CrcCalculator from './CrcCalculator';
 import ReaderNotConnectedException from './exceptions/ReaderNotConnectedException';
 var DeviceState = require('./DeviceState').default;
@@ -152,10 +152,16 @@ export default class NfcReader {
      * @param {HIDInputReportEvent} e The event data
      */
     onInputReport = (e) => {
+        // Issues:
+        // 1. Doesn't work if the last input report is exactly 63 bytes
+        // 2. doesn't work if the last is 0, but is actually in the middle of the data
+
+        // Possible workaround:
+        // Calculate the CRC and check if it matches the last two bytes, if it does we are at the end
+
         let data = new Uint8Array(e.data.buffer);
 
-        // The data returned is always 63 bytes long, if the end of the array isn't a 0
-        // more data is coming later, so do not call the callback yet, but append the data together first
+        // The data returned is always of a fixed size, which means "one" response can come in multiple "packets"
 
         let newData = new Uint8Array(this.inputReportData.length + data.length);
         newData.set(this.inputReportData);
@@ -163,13 +169,19 @@ export default class NfcReader {
 
         this.inputReportData = newData;
 
-        // Can maybe check something with the start being the header?
-        // Maybe something with the CRC can be done
-        // TODO this doesn't really work because it can end on 0 without being finished
-        if (lastBlank(data)) {
-            if (this.readerCallback != null) {
-                let trimmed = trimEnd(this.inputReportData, 0);
+        let trimmed = trimEnd(this.inputReportData, 0);
 
+        // If we are finished the last two bytes should be the CRC
+        let lastTwo = trimmed.slice(trimmed.length - 2, trimmed.length);
+        let crc = CrcCalculator.crc16(trimmed.slice(0, trimmed.length - 2));
+
+        // The CRC returned from the device is in big endian, but the CRC calculates in little
+        let temp = crc[0];
+        crc[0] = crc[1];
+        crc[1] = temp;
+
+        if (arraysEqual(crc, lastTwo)) {
+            if (this.readerCallback != null) {
                 this.readerCallback(trimmed, DeviceState.DataReceived);
             } else {
                 console.warn("No reader callback set");

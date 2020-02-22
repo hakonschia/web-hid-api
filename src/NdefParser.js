@@ -19,7 +19,6 @@ export default class NdefParser {
             throw error;
         }
 
-        console.log(smartTapData);
         let ndefRecord = this.getSmartTapNdefRecord(smartTapData);
 
         if (ndefRecord == null) {
@@ -49,7 +48,6 @@ export default class NdefParser {
         let payloadLength = data[indexDfef76 + tagNameLength];
         let payloadStart = indexDfef76 + tagNameLength + tagLengthLength;
 
-        console.log("payload length", payloadLength, "payload start", payloadStart);
         return data.slice(payloadStart, payloadStart + payloadLength);
     }
 
@@ -67,7 +65,6 @@ export default class NdefParser {
 
         for (let i = 0; i < ndefMessage.length; i++) {
             let ndefRecord = ndefMessage[i];
-            console.log(ndefRecord)
 
             // 0x54 = 84 = T in ASCII
             if (ndefRecord.type === "T") {
@@ -86,7 +83,3 @@ export default class NdefParser {
     }
 
 }
-
-
-// Expose an NdefParser object to the window to make it accessible elsewhere
-//window.ndefParser = new NdefParser();

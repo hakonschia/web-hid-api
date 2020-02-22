@@ -31,7 +31,6 @@ export function bytesToHex(bytes) {
     return hex.join("");
 }
 
-
 /**
  * Convert a hex string to an ASCII string
  * 
@@ -48,7 +47,6 @@ export function hexToAscii(hex) {
     }
     return str;
 }
-
 
 /**
  * Converts an int to a byte array
@@ -88,15 +86,6 @@ export function leftPad(array, value, length) {
 }
 
 /**
- * Checks if the last element in an array is blank
- * 
- * @param {array} array 
- */
-export let lastBlank = (array) => {
-    return array[array.length - 1] === 0;
-}
-
-/**
  * Trims the end of an array by removing all the last elements
  * that match a given value
  * 
@@ -123,7 +112,6 @@ export let trimEnd = (array, value) => {
     return index === -1 ? array : array.slice(0, index);
 }
 
-
 /**
  * Finds the starting index of a sub array in an array
  * 
@@ -137,11 +125,25 @@ export let getIndexOfSubArray = (array, subArray) => {
     for (let i = 0; i < array.length - subArray.length; i++) {
         let toCompare = array.slice(i, i + subArray.length);
 
-        if (JSON.stringify(toCompare) === JSON.stringify(subArray)) {
+        if (arraysEqual(toCompare, subArray)) {
             index = i;
             break;
         }
     }
 
     return index;
+}
+
+/**
+ * Compares if two arrays are equal in contents and order
+ * 
+ * @param {array} arr1  
+ * @param {array} arr2 
+ */
+export let arraysEqual = (arr1, arr2) => {
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
+
+    return JSON.stringify(arr1) === JSON.stringify(arr2);
 }
