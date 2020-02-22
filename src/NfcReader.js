@@ -1,4 +1,4 @@
-import { VIVOPAY_2_HEADER } from './constants';
+import { VIVOPAY_2_HEADER} from './constants';
 import { leftPad, intToByteArray, trimEnd, arraysEqual } from './util';
 import CrcCalculator from './CrcCalculator';
 import ReaderNotConnectedException from './exceptions/ReaderNotConnectedException';

@@ -37,12 +37,31 @@ const MERCHANT_ID = "04bedbe7";
 export const MERCHANT_ID_DATA = "ffe4018edfee3b04" + MERCHANT_ID + "dfee3c00dfee3d00dfef2500dfed0100dfed02050000000001";
 
 
+
+/**
+ * The service type of the transaction. This specifies what types of Google Pay
+ * card types to recognize, for example only loyalty passes
+ * 
+ * The different service types can be found in the ViVopay documentation
+ */
+export const SERVICE_TYPES = {
+    all: "00",
+    loyalty: "03"
+}
+
+/**
+ * The service type to use
+ */
+export const SERVICE_TYPE = SERVICE_TYPES.loyalty;
+
 /**
  * The data used for the activate transaction command
  * 
- * Only allows for loyalty passes to be recognized
+ * 9F02 and 9F03 are related to transactions, which is not used here so they are always 0
+ * 
+ * FFEE08 is a tag hodling smartTap information
  */
-export const ACTIVATE_TRANSACTION_DATA = "9f0201009f030100ffee080adfef1a010adfed280103";
+export const ACTIVATE_TRANSACTION_DATA = "9f0201009f030100ffee080adfef1a010adfed2801" + SERVICE_TYPE;
 
 /**
  * The header for the ViVoTech2 protocol. Always used at the
