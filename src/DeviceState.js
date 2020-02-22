@@ -3,4 +3,4 @@ const DeviceState = {
     DataReceived: "DataReceived"
 };
 
-module.exports = DeviceState; 
+export default DeviceState; 

@@ -3,7 +3,7 @@ import NdefParser from '../NdefParser';
 import NfcReader from '../NfcReader';
 import { VENDOR_ID, PRODUCT_ID, MERCHANT_ID_DATA, LTPK, LTPK_VERSION } from '../constants';
 import { hexToBytes, bytesToHex } from '../util';
-var DeviceState = require('../DeviceState');
+import DeviceState from '../DeviceState';
 
 export default class Home extends React.Component {
     constructor(props) {
@@ -86,7 +86,6 @@ export default class Home extends React.Component {
     }
 
     pingDevice = () => {
-        this.state.outputText += "PING\n"
         this.nfcReader.ping();
     }
 

@@ -1,6 +1,6 @@
 import { VIVOPAY_2_HEADER } from './constants';
 import { hexToBytes, leftPad, intToByteArray, lastBlank, trimEnd } from './util';
-var DeviceState = require('./DeviceState');
+var DeviceState = require('./DeviceState').default;
 
 export default class NfcReader {
 
@@ -36,7 +36,8 @@ export default class NfcReader {
     /**
      * Sets the callback function to use when a reader event has happened
      * 
-     * @param {function} callback The callback should look like: callback(Uint8Array, DeviceState)
+     * @param {function} callback The callback should look like: callback(Uint8Array data, DeviceState state)
+     * The data holds the data sent/received from the reader. The state identifies what kind of event happened
      */
     setCallback = (callback) => {
         this.readerCallback = callback;
