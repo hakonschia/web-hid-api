@@ -1,10 +1,9 @@
 import React from 'react';
 import NdefParser from '../NdefParser';
 import NfcReader from '../NfcReader';
-import { VENDOR_ID, PRODUCT_ID, MERCHANT_ID_DATA, LTPK, LTPK_VERSION } from '../constants';
+import { VENDOR_ID, PRODUCT_ID, MERCHANT_ID_DATA, LTPK, LTPK_VERSION, ACTIVATE_TRANSACTION_DATA } from '../constants';
 import { hexToBytes, bytesToHex } from '../util';
 import DeviceState from '../DeviceState';
-import CrcCalculator from '../CrcCalculator';
 
 export default class Home extends React.Component {
     constructor(props) {
@@ -20,10 +19,13 @@ export default class Home extends React.Component {
             subCommandInput: "",
             commandDataInput: ""
         };
-
-        console.log(bytesToHex(CrcCalculator.crc16(hexToBytes("5669564f746563683200c765002400000001961949513dd3d1693ab64f13fb684ca242c0b1c4b5008ea02627f1304b900f7b"))));
     }
 
+    /**
+     * Appends text to the output textarea
+     * 
+     * @param {string} text The text to append 
+     */
     addOutput(text) {
         this.setState({
             outputText: this.state.outputText += text
@@ -44,7 +46,7 @@ export default class Home extends React.Component {
             }]
         });
 
-        return device.length == 0 ? null : device[0];
+        return device.length === 0 ? null : device[0];
     }
 
     /**
@@ -96,16 +98,25 @@ export default class Home extends React.Component {
         this.nfcReader.sendCommand(0xC7, 0x65, hexToBytes(LTPK_VERSION + LTPK));
     }
 
+    /**
+     * Sends a ping command to the device
+     */
     pingDevice = () => {
-        this.nfcReader.ping();
+        try {
+            this.nfcReader.ping();
+        } catch (error) {
+            alert("No reader connected");
+        }
     }
 
+    /**
+     * Sends an activate transaction command to the device
+     */
     activateTransaction = () => {
-        let hex = "9f0201009f030100ffee080adfef1a010adfed280103";
-        let bytes = hexToBytes(hex);
+        let data = hexToBytes(ACTIVATE_TRANSACTION_DATA);
 
         try {
-            this.nfcReader.activateTransaction(bytes);
+            this.nfcReader.activateTransaction(data);
         } catch {
             alert("No reader connected");
         }
@@ -125,13 +136,11 @@ export default class Home extends React.Component {
             let command = hexToBytes(this.state.commandInput.toString())[0];
             let subCommand = hexToBytes(this.state.subCommandInput.toString())[0];
 
-            if (command == undefined || subCommand == undefined || command == 0) {
+            if (command === undefined || subCommand === undefined || command === 0) {
                 this.addOutput("Invalid parameters\n");
 
                 return;
             }
-
-            console.log(command);
 
             let data = this.state.commandDataInput;
             if (data != null) {
@@ -140,11 +149,9 @@ export default class Home extends React.Component {
                 data = new Uint8Array();
             }
     
-            console.log(data);
-    
             this.nfcReader.sendCommand(command, subCommand, data);
         } catch(error) {
-            alert("No reader connected " + error)
+            alert("No reader connected")
         }
     }
 
@@ -167,7 +174,7 @@ export default class Home extends React.Component {
                 this.addOutput(`Data received: ${hex}\n`);
 
                 // 0x02 = Activate transaction
-                if (command == 0x02) {
+                if (command === 0x02) {
                     this.handleTransactionResponse(data);
                 }
 
@@ -189,14 +196,12 @@ export default class Home extends React.Component {
         let response = NfcReader.getResponse(data);
 
         // 0x57 = Loyalty response
-        if (response == 0x57) {
+        if (response === 0x57) {
             let redemptionValue = NdefParser.getSmartTapRedemptionValue(data);
 
-            console.log("smartTapRedemptionValue:", redemptionValue);
             this.setState({
                 smartTapRedemptionValue: redemptionValue
             })
-            // ui.smartTapRedemptionValue.innerHTML = "Data read from phone: " + smartTapRedemptionValue;
         } else {
             console.warn("There was an error reading the pass")
         }
@@ -205,7 +210,7 @@ export default class Home extends React.Component {
     /**
      * Checks if the device is already paired on startup
      */
-    componentWillMount() {
+    componentDidMount() {
         this.getDevice().then(device => {
             if (device != null) {
                 this.initializeReader(device);

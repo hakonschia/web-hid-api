@@ -1,6 +1,6 @@
-import { hexToAscii, bytesToHex, getIndexOfSubArray } from './util.js';
+import { hexToAscii, bytesToHex, getIndexOfSubArray } from './util';
+import InvalidTapDataException from './exceptions/InvalidTapDataException';
 const ndef = require('ndef');
-
 
 export default class NdefParser {
     /**
@@ -23,7 +23,7 @@ export default class NdefParser {
         let ndefRecord = this.getSmartTapNdefRecord(smartTapData);
 
         if (ndefRecord == null) {
-            throw "NDEF Record not found";
+            throw new InvalidTapDataException("NDEF Record not found");
         }
 
         // The first byte is always empty
@@ -42,8 +42,8 @@ export default class NdefParser {
 
         // The SmartTap data is found in the tag DFEF76
         let indexDfef76 = getIndexOfSubArray(data, new Uint8Array([0xDF, 0xEF, 0x76]));
-        if (indexDfef76 == -1) {
-            throw "Tag DFEF76 not found";
+        if (indexDfef76 === -1) {
+            throw new InvalidTapDataException("Tag DFEF76 not found");
         }
 
         let payloadLength = data[indexDfef76 + tagNameLength];
@@ -70,7 +70,7 @@ export default class NdefParser {
             console.log(ndefRecord)
 
             // 0x54 = 84 = T in ASCII
-            if (ndefRecord.type == "T") {
+            if (ndefRecord.type === "T") {
                 return ndefRecord;
             }
 

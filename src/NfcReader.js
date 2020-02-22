@@ -1,7 +1,7 @@
 import { VIVOPAY_2_HEADER } from './constants';
-import { bytesToHex, hexToBytes, leftPad, intToByteArray, lastBlank, trimEnd } from './util';
+import { leftPad, intToByteArray, lastBlank, trimEnd } from './util';
 import CrcCalculator from './CrcCalculator';
-import ReaderNotConnected from './exceptions/ReaderNotConnected';
+import ReaderNotConnectedException from './exceptions/ReaderNotConnectedException';
 var DeviceState = require('./DeviceState').default;
 
 export default class NfcReader {
@@ -87,7 +87,7 @@ export default class NfcReader {
         if (!this.device || !this.device.opened) {
             console.warn("Trying to use unconnected or unopened device");
 
-            throw new ReaderNotConnected("Reader is not connected or has not yet been opened");
+            throw new ReaderNotConnectedException("Reader is not connected or has not yet been opened");
         }
 
         data = this.buildCommand(command, subCommand, data);
@@ -152,7 +152,6 @@ export default class NfcReader {
      * @param {HIDInputReportEvent} e The event data
      */
     onInputReport = (e) => {
-        console.log(e);
         let data = new Uint8Array(e.data.buffer);
 
         // The data returned is always 63 bytes long, if the end of the array isn't a 0

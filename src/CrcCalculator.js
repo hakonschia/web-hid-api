@@ -69,7 +69,6 @@ export default class CrcCalculator {
         }
 
         var asByteArray = intToByteArray((crc ^ 0) & 0xFFFF);
-        console.log(asByteArray);
 
         return asByteArray;
     }

@@ -41,7 +41,7 @@ export function bytesToHex(bytes) {
  * @returns An ASCII representation of the hex string
  */
 export function hexToAscii(hex) {
-    var hex = hex.toString();
+    hex = hex.toString();
     var str = '';
     for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2) {
         str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
@@ -93,7 +93,7 @@ export function leftPad(array, value, length) {
  * @param {array} array 
  */
 export let lastBlank = (array) => {
-    return array[array.length - 1] == 0;
+    return array[array.length - 1] === 0;
 }
 
 /**
@@ -112,15 +112,15 @@ export let trimEnd = (array, value) => {
     let found = false;
 
     while (!found && i >= 0) {
-        if (array[i] != value) {
+        if (array[i] !== value) {
             index = i + 1;
         }
 
-        found = (index != -1);
+        found = (index !== -1);
         i--;
     }
 
-    return index == -1 ? array : array.slice(0, index);
+    return index === -1 ? array : array.slice(0, index);
 }
 
 
