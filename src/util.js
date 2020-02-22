@@ -5,7 +5,7 @@
  * 
  * @param {*} bytes 
  */
-function hexToBytes(hex) {
+export function hexToBytes(hex) {
     var bytes = new Uint8Array(hex.length / 2);
 
     for (var c = 0; c < hex.length; c += 2) {
@@ -22,7 +22,7 @@ function hexToBytes(hex) {
  * 
  * @param {*} bytes 
  */
-function bytesToHex(bytes) {
+export function bytesToHex(bytes) {
     for (var hex = [], i = 0; i < bytes.length; i++) {
         var current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
         hex.push((current >>> 4).toString(16));
@@ -40,7 +40,7 @@ function bytesToHex(bytes) {
  * @param {string} hex The hex string to convert 
  * @returns An ASCII representation of the hex string
  */
-function hexToAscii(hex) {
+export function hexToAscii(hex) {
     var hex = hex.toString();
     var str = '';
     for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2) {
@@ -58,7 +58,7 @@ function hexToAscii(hex) {
  * @param {integer} int The int to convert
  * @returns A Uint8Array representation of the int given
  */
-function intToByteArray(int) {
+export function intToByteArray(int) {
     let arr = [];
 
     while (int > 0) {
@@ -79,7 +79,7 @@ function intToByteArray(int) {
  * @param {any} value 
  * @param {number} length 
  */
-function leftPad(array, value, length) {
+export function leftPad(array, value, length) {
     if (array.length >= length) {
         return array;
     }
@@ -92,7 +92,7 @@ function leftPad(array, value, length) {
  * 
  * @param {array} array 
  */
-let lastBlank = (array) => {
+export let lastBlank = (array) => {
     return array[array.length - 1] == 0;
 }
 
@@ -105,7 +105,7 @@ let lastBlank = (array) => {
  * @returns A new array with the end trimmed. If no elements are removed the
  * original array is returned untouched
  */
-let trimEnd = (array, value) => {
+export let trimEnd = (array, value) => {
     let index = -1;
 
     let i = array.length - 1;
@@ -131,7 +131,7 @@ let trimEnd = (array, value) => {
  * @param {array} subArray The sub array to search for
  * @returns The starting index of subArray. If it wasn't found -1 is returned
  */
-let getIndexOfSubArray = (array, subArray) => {
+export let getIndexOfSubArray = (array, subArray) => {
     let index = -1;
 
     for (let i = 0; i < array.length - subArray.length; i++) {

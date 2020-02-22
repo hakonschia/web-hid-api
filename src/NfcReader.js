@@ -1,4 +1,8 @@
-class NfcReader {
+import { VIVOPAY_2_HEADER } from './constants';
+import { hexToBytes, leftPad, intToByteArray, lastBlank, trimEnd } from './util';
+var DeviceState = require('./DeviceState');
+
+export default class NfcReader {
 
     /**
      * Creates a new device
@@ -35,7 +39,7 @@ class NfcReader {
      * @param {function} callback The callback should look like: callback(Uint8Array, DeviceState)
      */
     setCallback = (callback) => {
-        this.callback = callback;
+        this.readerCallback = callback;
     }
 
     /**
@@ -87,8 +91,8 @@ class NfcReader {
 
         this.device.sendReport(0x01, data);
 
-        if (this.callback != null) {
-            this.callback(data, DeviceState.DataSent);
+        if (this.readerCallback != null) {
+            this.readerCallback(data, DeviceState.DataSent);
         } else {
             console.warn("No reader callback set");
         }
@@ -138,6 +142,7 @@ class NfcReader {
      * @param {HIDInputReportEvent} e The event data
      */
     onInputReport = (e) => {
+        console.log(e);
         let data = new Uint8Array(e.data.buffer);
 
         // The data returned is always 63 bytes long, if the end of the array isn't a 0
@@ -153,10 +158,10 @@ class NfcReader {
         // Maybe something with the CRC can be done
         // TODO this doesn't really work because it can end on 0 without being finished
         if (lastBlank(data)) {
-            if (this.callback != null) {
+            if (this.readerCallback != null) {
                 let trimmed = trimEnd(this.inputReportData, 0);
 
-                this.callback(trimmed, DeviceState.DataReceived);
+                this.readerCallback(trimmed, DeviceState.DataReceived);
             } else {
                 console.warn("No reader callback set");
             }
