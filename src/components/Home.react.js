@@ -197,11 +197,15 @@ export default class Home extends React.Component {
 
         // 0x57 = Loyalty response
         if (response === 0x57) {
-            let redemptionValue = NdefParser.getSmartTapRedemptionValue(data);
+            try {
+                let redemptionValue = NdefParser.getSmartTapRedemptionValue(data);
 
-            this.setState({
-                smartTapRedemptionValue: redemptionValue
-            })
+                this.setState({
+                    smartTapRedemptionValue: redemptionValue
+                })
+            } catch (error) {
+                console.log(error);
+            }
         } else {
             console.warn("There was an error reading the pass")
         }
