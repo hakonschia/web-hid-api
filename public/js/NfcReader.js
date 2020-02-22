@@ -5,7 +5,7 @@ class NfcReader {
      * 
      * Use NfcReader.connect() to connect to the device
      * 
-     * @param {HIDDevice} device The device info
+     * @param {HIDDevice} device The HIDDevice returned from hid.getDevices() or hid.requestDevice()
      */
     constructor(device) {
         this.device = device;

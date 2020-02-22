@@ -16,7 +16,14 @@ let ui = {
 
 let nfcReader = null;
 
-window.onload = () => {
+window.onload = async () => {
+    // Check if the device is already paired
+    getDevice().then(device => {
+        if (device != null) {
+            initializeReader(device);
+        }
+    });
+
     ui.requestAccessBtn = document.getElementById("requestAccessBtn");
     ui.requestAccessBtn.onclick = requestAccessOnClick;
 
@@ -47,6 +54,38 @@ window.onload = () => {
     }
 }
 
+/**
+ * Initializes the NFC reader
+ * 
+ * @param {HIDDevice} device The HIDDevice returned from getDevices() or requestDevices()
+ */
+let initializeReader = (device) => {
+    nfcReader = new NfcReader(device);
+
+    nfcReader.connect(connected => {
+        if (connected) {
+            nfcReader.setCallback(readerCallback);
+
+            configureReader();
+        }
+    });
+}
+
+/**
+ * Finds the device if it is already paired
+ * 
+ * @returns If the device is paired, the HIDDevice is returned. Otherwise null is returned
+ */
+let getDevice = async () => {
+    let device = await navigator.hid.getDevices({
+        filters: [{
+            vendorId: VENDOR_ID,
+            productId: PRODUCT_ID
+        }]
+    });
+
+    return device.length == 0 ? null : device[0];
+}
 
 /**
  * Click listener for the request access button
@@ -54,31 +93,20 @@ window.onload = () => {
  * If access was given the nfcReader is initialized and connected
  */
 let requestAccessOnClick = async () => {
-    let device;
-
     try {
-        device = await navigator.hid.requestDevice({
+        let device = await navigator.hid.requestDevice({
             filters: [{
                 vendorId: VENDOR_ID,
                 productId: PRODUCT_ID
             }]
         });
+
+        initializeReader(device);
     } catch (err) {
         console.log(err);
-
-        return;
-    }
-
-    if (device !== undefined) {
-        nfcReader = new NfcReader(device);
-
-        nfcReader.connect(connected => {
-            nfcReader.setCallback(readerCallback);
-
-            configureReader();
-        })
     }
 }
+
 
 /**
  * Configures the reader
@@ -133,6 +161,7 @@ let readerCallback = (data, deviceState) => {
             break;
 
         case DeviceState.DataReceived:
+            console.trace();
             ui.outputText.value += `Data received: ${hex}\n`;
 
             // 0x02 = Activate transaction
