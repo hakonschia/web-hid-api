@@ -28,7 +28,7 @@ export default class Home extends React.Component {
      */
     addOutput(text) {
         this.setState({
-            outputText: this.state.outputText += text
+            outputText: this.state.outputText + text
         });
     }
 
