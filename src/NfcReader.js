@@ -125,21 +125,27 @@ export default class NfcReader {
         let length = headerLength + commandLength + subCommandLength + dataLengthLength + dataLength + CRCLength;
         let data = new Uint8Array(length);
 
-        // TOOD refactor this mess
-        data.set(VIVOPAY_2_HEADER);
+        let offset = 0;
 
-        data.set([command], headerLength);
+        data.set(VIVOPAY_2_HEADER, offset);
+        offset += headerLength;
 
-        data.set([subCommand], headerLength + commandLength);
+        data.set([command], offset);
+        offset += commandLength;
 
-        data.set(dataLengthAsByteArray, headerLength + commandLength + subCommandLength);
+        data.set([subCommand], offset);
+        offset += subCommandLength;
 
-        data.set(baseData, headerLength + commandLength + subCommandLength + dataLengthLength);
+        data.set(dataLengthAsByteArray, offset);
+        offset += dataLengthLength;
+
+        data.set(baseData, offset);
+        offset += dataLength;
 
         // Calculate the CRC from the entire command so far
         let crc = CrcCalculator.crc16(data.slice(0, data.length - CRCLength));
 
-        data.set(crc, headerLength + commandLength + subCommandLength + dataLengthLength + dataLength);
+        data.set(crc, offset);
 
         return data;
     }
@@ -152,13 +158,6 @@ export default class NfcReader {
      * @param {HIDInputReportEvent} e The event data
      */
     onInputReport = (e) => {
-        // Issues:
-        // 1. Doesn't work if the last input report is exactly 63 bytes
-        // 2. doesn't work if the last is 0, but is actually in the middle of the data
-
-        // Possible workaround:
-        // Calculate the CRC and check if it matches the last two bytes, if it does we are at the end
-
         let data = new Uint8Array(e.data.buffer);
 
         // The data returned is always of a fixed size, which means "one" response can come in multiple "packets"
@@ -176,6 +175,7 @@ export default class NfcReader {
         let crc = CrcCalculator.crc16(trimmed.slice(0, trimmed.length - 2));
 
         // The CRC returned from the device is in big endian, but the CRC calculates in little
+        // This can be verified from the ViVopay documentation on page 11
         let temp = crc[0];
         crc[0] = crc[1];
         crc[1] = temp;
