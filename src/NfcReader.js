@@ -115,8 +115,6 @@ export default class NfcReader {
         const dataLengthLength = 2;
         const CRCLength = 2;
 
-        // The CRC is present in the data here, but isn't counted in the payload length for the command
-        // TODO Try to calculate the CRC manually
         let dataLength = baseData.length;
         let dataLengthAsByteArray = leftPad(intToByteArray(dataLength), 0, dataLengthLength);
 
@@ -142,8 +140,8 @@ export default class NfcReader {
         data.set(baseData, offset);
         offset += dataLength;
 
-        // Calculate the CRC from the entire command so far
         let crc = CrcCalculator.crc16(data.slice(0, data.length - CRCLength));
+        crc = leftPad(crc, 0, CRCLength);
 
         data.set(crc, offset);
 
