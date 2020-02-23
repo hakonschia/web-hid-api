@@ -5,7 +5,7 @@ The API gives access to HID devices in browsers, which previously was not possib
 
 WebHID is replacing the [chrome.hid](https://developer.chrome.com/apps/hid) API, which is an API for communicating with HID devices from Chrome apps. The chrome.hid API also did allow for communication with HID devices in Chromium browsers, but you needed to have the Chrome app installed and open, which is not really ideal. In addition to WebHID improving on this aspect, Chrome apps are getting killed soon and wouldn't work for long anyways.
 
-The project uses the API to communicate with a VP3300 reader from Vivopay. The file [src/NfcReader.js](https://github.com/hakonschia/web-hid-api/blob/react/src/NfcReader.js) is a very lightweight JavaScript version of the [Universal SDK](https://idtechproducts.com/support/technical-blog/id/getting-started-with-id-techs-universal-sdk/) made by ID Tech (only support for VP3300, other devices using the ViVotech2 protocol might also work). Commands can be sent to the device using ```NfcReader.sendCommand(command, subCommand, data)```.
+The project uses the API to communicate with a VP3300 reader from Vivopay. The file [src/NfcReader.js](https://github.com/hakonschia/web-hid-api/blob/react/src/NfcReader.js) is a very lightweight JavaScript version of the [Universal SDK](https://idtechproducts.com/support/technical-blog/id/getting-started-with-id-techs-universal-sdk/) made by ID Tech (only support for VP3300, other devices using the ViVotech2 protocol might also work). Commands can be sent to the device using ```NfcReader.sendCommand(command, subCommand, data)```. There are also convenience methods for pinging the device and starting a transaction, which hides away the command and subcommand.
 
 ## Branches
 ### Master
